@@ -1,0 +1,67 @@
+name: Deploy Hugging Face Space
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync Hugging Face Space secrets
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+          HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
+
+          PUBLIC_BASE_URL: ${{ secrets.PUBLIC_BASE_URL }}
+          LOVANN_PORT: "7860"
+          N8N_INTERNAL_PORT: "5678"
+
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
+          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
+          GOOGLE_AI_MODEL: ${{ secrets.GOOGLE_AI_MODEL }}
+
+          LOVANN_DATABASE_URL: ${{ secrets.LOVANN_DATABASE_URL }}
+
+          N8N_ENCRYPTION_KEY: ${{ secrets.N8N_ENCRYPTION_KEY }}
+          N8N_BASIC_AUTH_ACTIVE: "true"
+          N8N_BASIC_AUTH_USER: ${{ secrets.N8N_BASIC_AUTH_USER }}
+          N8N_BASIC_AUTH_PASSWORD: ${{ secrets.N8N_BASIC_AUTH_PASSWORD }}
+          N8N_HOST: ${{ secrets.N8N_HOST }}
+          N8N_PROTOCOL: "https"
+          N8N_PORT: "5678"
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          GENERIC_TIMEZONE: "Asia/Jakarta"
+          TZ: "Asia/Jakarta"
+
+          DB_TYPE: "postgresdb"
+          DB_POSTGRESDB_HOST: ${{ secrets.DB_POSTGRESDB_HOST }}
+          DB_POSTGRESDB_PORT: ${{ secrets.DB_POSTGRESDB_PORT }}
+          DB_POSTGRESDB_DATABASE: ${{ secrets.DB_POSTGRESDB_DATABASE }}
+          DB_POSTGRESDB_USER: ${{ secrets.DB_POSTGRESDB_USER }}
+          DB_POSTGRESDB_PASSWORD: ${{ secrets.DB_POSTGRESDB_PASSWORD }}
+        run: |
+          python -m pip install --upgrade huggingface_hub
+          python scripts/sync_hf_secrets.py
+
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+          HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "github-actions"
+          git remote add hf "https://oauth2:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE_NAME}"
+          git push hf HEAD:main --force
