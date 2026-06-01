@@ -1,6 +1,8 @@
 # Google Sheet Template
 
-Create these tabs with headers in row 1.
+`/register` now auto-creates these tabs and headers if the spreadsheet is empty or incomplete.
+
+Manual template reference:
 
 ## Finance_Log
 
@@ -72,4 +74,3 @@ Recommended dashboard tabs:
 - `Settings`
 
 Keep dashboard formulas separate from log tabs. n8n appends only to the log tabs.
-

@@ -7,6 +7,7 @@ from huggingface_hub import HfApi
 SECRET_NAMES = [
     "PUBLIC_BASE_URL",
     "LOVANN_PORT",
+    "LOVANN_INTERNAL_BASE_URL",
     "N8N_INTERNAL_PORT",
     "TELEGRAM_BOT_TOKEN",
     "GOOGLE_CLIENT_ID",

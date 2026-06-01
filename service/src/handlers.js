@@ -2,6 +2,7 @@ import {
   analyzeFoodImage,
   appendValues,
   buildOAuthUrl,
+  ensureSpreadsheetTemplate,
   extractSpreadsheetId,
   validateSpreadsheet,
 } from "./google.js";
@@ -94,6 +95,7 @@ export async function handleTelegramUpdate(update) {
         return { ok: false, chatId, reply: "Link Google Sheet tidak valid. Kirim /register <link_google_sheet>." };
       }
 
+      await ensureSpreadsheetTemplate(user.id, spreadsheetId);
       const validation = await validateSpreadsheet(user.id, spreadsheetId);
       if (!validation.ok) {
         const missing = [];
@@ -110,7 +112,11 @@ export async function handleTelegramUpdate(update) {
         spreadsheetUrl,
         spreadsheetId,
       });
-      return { ok: true, chatId, reply: "Sheet berhasil terhubung. Kamu sudah bisa input finance, habit, dan food." };
+      return {
+        ok: true,
+        chatId,
+        reply: "Sheet berhasil terhubung dan template Lovann sudah disiapkan. Kamu sudah bisa input finance, habit, dan food.",
+      };
     }
 
     if (type === "finance") {

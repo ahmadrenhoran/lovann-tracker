@@ -18,7 +18,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{$env.PUBLIC_BASE_URL + '/api/telegram/handle'}}",
+        "url": "={{($env.LOVANN_INTERNAL_BASE_URL || 'http://127.0.0.1:' + ($env.LOVANN_PORT || '7860')) + '/api/telegram/handle'}}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{JSON.stringify($json.body || $json)}}",
@@ -64,7 +64,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{$env.PUBLIC_BASE_URL + '/api/telegram/reply'}}",
+        "url": "={{($env.LOVANN_INTERNAL_BASE_URL || 'http://127.0.0.1:' + ($env.LOVANN_PORT || '7860')) + '/api/telegram/reply'}}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{JSON.stringify({ chatId: $json.chatId, text: $json.reply })}}",
@@ -153,4 +153,3 @@
   "active": false,
   "versionId": "lovann-telegram-router-v1"
 }
-

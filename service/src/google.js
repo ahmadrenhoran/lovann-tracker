@@ -59,6 +59,120 @@ const REQUIRED_SHEETS = {
   ],
 };
 
+const OPTIONAL_SHEETS = ["Finance_Dashboard", "Habit_Dashboard", "Food_Dashboard", "Settings"];
+
+const TAB_COLORS = {
+  Finance_Log: { red: 0.13, green: 0.45, blue: 0.89 },
+  Habit_Log: { red: 0.17, green: 0.63, blue: 0.39 },
+  Food_Log: { red: 0.94, green: 0.47, blue: 0.22 },
+  Finance_Dashboard: { red: 0.55, green: 0.72, blue: 0.98 },
+  Habit_Dashboard: { red: 0.57, green: 0.84, blue: 0.68 },
+  Food_Dashboard: { red: 0.98, green: 0.76, blue: 0.49 },
+  Settings: { red: 0.65, green: 0.56, blue: 0.89 },
+};
+
+const HEADER_COLORS = {
+  Finance_Log: { red: 0.88, green: 0.94, blue: 1 },
+  Habit_Log: { red: 0.9, green: 0.98, blue: 0.93 },
+  Food_Log: { red: 1, green: 0.94, blue: 0.89 },
+};
+
+const DASHBOARD_VALUES = {
+  Finance_Dashboard: [
+    ["Finance Dashboard"],
+    [""],
+    ["Metric", "Value"],
+    ["Total Expense", '=IFERROR(SUMIF(Finance_Log!E2:E,"expense",Finance_Log!I2:I),0)'],
+    ["Total Income", '=IFERROR(SUMIF(Finance_Log!E2:E,"income",Finance_Log!I2:I),0)'],
+    ["Net Cashflow", "=B5-B4"],
+    [""],
+    ["Top Expense Category", `=IFERROR(INDEX(QUERY(Finance_Log!F2:I,"select F,sum(I) where E = 'expense' and F is not null group by F order by sum(I) desc limit 1",0),1,1),"")`],
+    ["Top Expense Total", `=IFERROR(INDEX(QUERY(Finance_Log!F2:I,"select F,sum(I) where E = 'expense' and F is not null group by F order by sum(I) desc limit 1",0),1,2),0)`],
+  ],
+  Habit_Dashboard: [
+    ["Habit Dashboard"],
+    [""],
+    ["Metric", "Value"],
+    ["Completed", '=COUNTIF(Habit_Log!F2:F,"done")'],
+    ["Skipped", '=COUNTIF(Habit_Log!F2:F,"skip")'],
+    ["Completion Rate", '=IFERROR(COUNTIF(Habit_Log!F2:F,"done")/COUNTA(Habit_Log!F2:F),0)'],
+    [""],
+    ["Most Active Habit", '=IFERROR(INDEX(QUERY(Habit_Log!E2:F,"select E,count(E) where E is not null group by E order by count(E) desc limit 1",0),1,1),"")'],
+  ],
+  Food_Dashboard: [
+    ["Food Dashboard"],
+    [""],
+    ["Metric", "Value"],
+    ["Total Calories", "=IFERROR(SUM(Food_Log!I2:I),0)"],
+    ["Protein (g)", "=IFERROR(SUM(Food_Log!J2:J),0)"],
+    ["Carbs (g)", "=IFERROR(SUM(Food_Log!K2:K),0)"],
+    ["Fat (g)", "=IFERROR(SUM(Food_Log!L2:L),0)"],
+    [""],
+    ["Most Logged Food", '=IFERROR(INDEX(QUERY(Food_Log!F2:F,"select F,count(F) where F is not null group by F order by count(F) desc limit 1",0),1,1),"")'],
+  ],
+  Settings: [
+    ["Lovann Settings"],
+    [""],
+    ["Section", "Value"],
+    ["Timezone", "Asia/Jakarta"],
+    ["Currency", "IDR"],
+    ["Finance categories", "food, transport, shopping, bills, health, entertainment"],
+    ["Habit ideas", "reading, workout, meditation, journaling, sleep"],
+    ["Food notes", "Use Food_Log for manual entries or Telegram food photos"],
+  ],
+};
+
+function columnLetter(index) {
+  let value = "";
+  let current = index + 1;
+  while (current > 0) {
+    const remainder = (current - 1) % 26;
+    value = String.fromCharCode(65 + remainder) + value;
+    current = Math.floor((current - 1) / 26);
+  }
+  return value;
+}
+
+function makeHeaderFormat(sheetName) {
+  return {
+    backgroundColor: HEADER_COLORS[sheetName] || { red: 0.94, green: 0.95, blue: 0.97 },
+    textFormat: {
+      bold: true,
+      foregroundColor: { red: 0.18, green: 0.21, blue: 0.24 },
+      fontSize: 10,
+    },
+    horizontalAlignment: "CENTER",
+    verticalAlignment: "MIDDLE",
+    wrapStrategy: "WRAP",
+  };
+}
+
+function makeDashboardHeaderFormat() {
+  return {
+    backgroundColor: { red: 0.96, green: 0.97, blue: 0.99 },
+    textFormat: {
+      bold: true,
+      foregroundColor: { red: 0.22, green: 0.25, blue: 0.29 },
+      fontSize: 10,
+    },
+    horizontalAlignment: "LEFT",
+    verticalAlignment: "MIDDLE",
+  };
+}
+
+function makeTitleFormat() {
+  return {
+    backgroundColor: { red: 0.16, green: 0.19, blue: 0.23 },
+    textFormat: {
+      bold: true,
+      foregroundColor: { red: 1, green: 1, blue: 1 },
+      fontSize: 14,
+    },
+    horizontalAlignment: "LEFT",
+    verticalAlignment: "MIDDLE",
+  };
+}
+
 export function getOAuthClient() {
   requireConfig(["googleClientId", "googleClientSecret", "googleRedirectUri"]);
   return new google.auth.OAuth2(
@@ -152,6 +266,228 @@ export async function validateSpreadsheet(telegramUserId, spreadsheetId) {
   };
 }
 
+export async function ensureSpreadsheetTemplate(telegramUserId, spreadsheetId) {
+  const sheets = await getAuthorizedSheetsClient(telegramUserId);
+  const spreadsheet = await sheets.spreadsheets.get({
+    spreadsheetId,
+    fields: "sheets(properties(sheetId,title,index))",
+  });
+
+  const sheetMap = new Map(
+    (spreadsheet.data.sheets || []).map((sheet) => [sheet.properties.title, sheet.properties.sheetId]),
+  );
+
+  const requests = [];
+  const targetSheets = [...Object.keys(REQUIRED_SHEETS), ...OPTIONAL_SHEETS];
+
+  for (const name of targetSheets) {
+    if (!sheetMap.has(name)) {
+      requests.push({
+        addSheet: {
+          properties: {
+            title: name,
+            tabColorStyle: {
+              rgbColor: TAB_COLORS[name],
+            },
+            gridProperties: {
+              rowCount: 1000,
+              columnCount: 26,
+              frozenRowCount: name in REQUIRED_SHEETS ? 1 : 0,
+            },
+          },
+        },
+      });
+    }
+  }
+
+  if (requests.length) {
+    const response = await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: { requests },
+    });
+
+    for (const reply of response.data.replies || []) {
+      if (reply.addSheet?.properties?.title) {
+        sheetMap.set(reply.addSheet.properties.title, reply.addSheet.properties.sheetId);
+      }
+    }
+  }
+
+  const valueRanges = [];
+  for (const [sheetName, headers] of Object.entries(REQUIRED_SHEETS)) {
+    valueRanges.push({
+      range: `${sheetName}!A1:${columnLetter(headers.length - 1)}1`,
+      values: [headers],
+    });
+  }
+
+  for (const [sheetName, rows] of Object.entries(DASHBOARD_VALUES)) {
+    const maxWidth = Math.max(...rows.map((row) => row.length));
+    valueRanges.push({
+      range: `${sheetName}!A1:${columnLetter(maxWidth - 1)}${rows.length}`,
+      values: rows,
+    });
+  }
+
+  await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId,
+    requestBody: {
+      valueInputOption: "USER_ENTERED",
+      data: valueRanges,
+    },
+  });
+
+  const formatRequests = [];
+
+  for (const [sheetName, headers] of Object.entries(REQUIRED_SHEETS)) {
+    const sheetId = sheetMap.get(sheetName);
+    if (sheetId == null) continue;
+
+    formatRequests.push(
+      {
+        repeatCell: {
+          range: {
+            sheetId,
+            startRowIndex: 0,
+            endRowIndex: 1,
+            startColumnIndex: 0,
+            endColumnIndex: headers.length,
+          },
+          cell: {
+            userEnteredFormat: makeHeaderFormat(sheetName),
+          },
+          fields:
+            "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,verticalAlignment,wrapStrategy)",
+        },
+      },
+      {
+        autoResizeDimensions: {
+          dimensions: {
+            sheetId,
+            dimension: "COLUMNS",
+            startIndex: 0,
+            endIndex: headers.length,
+          },
+        },
+      },
+      {
+        setBasicFilter: {
+          filter: {
+            range: {
+              sheetId,
+              startRowIndex: 0,
+              startColumnIndex: 0,
+              endColumnIndex: headers.length,
+            },
+          },
+        },
+      }
+    );
+  }
+
+  for (const [sheetName, rows] of Object.entries(DASHBOARD_VALUES)) {
+    const sheetId = sheetMap.get(sheetName);
+    if (sheetId == null) continue;
+    const maxWidth = Math.max(...rows.map((row) => row.length));
+
+    formatRequests.push(
+      {
+        unmergeCells: {
+          range: {
+            sheetId,
+            startRowIndex: 0,
+            endRowIndex: 1,
+            startColumnIndex: 0,
+            endColumnIndex: Math.max(2, maxWidth),
+          },
+        },
+      },
+      {
+        mergeCells: {
+          range: {
+            sheetId,
+            startRowIndex: 0,
+            endRowIndex: 1,
+            startColumnIndex: 0,
+            endColumnIndex: Math.max(2, maxWidth),
+          },
+          mergeType: "MERGE_ALL",
+        },
+      },
+      {
+        repeatCell: {
+          range: {
+            sheetId,
+            startRowIndex: 0,
+            endRowIndex: 1,
+            startColumnIndex: 0,
+            endColumnIndex: Math.max(2, maxWidth),
+          },
+          cell: {
+            userEnteredFormat: makeTitleFormat(),
+          },
+          fields: "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,verticalAlignment)",
+        },
+      },
+      {
+        repeatCell: {
+          range: {
+            sheetId,
+            startRowIndex: 2,
+            endRowIndex: 3,
+            startColumnIndex: 0,
+            endColumnIndex: Math.max(2, maxWidth),
+          },
+          cell: {
+            userEnteredFormat: makeDashboardHeaderFormat(),
+          },
+          fields: "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,verticalAlignment)",
+        },
+      },
+      {
+        repeatCell: {
+          range: {
+            sheetId,
+            startRowIndex: 3,
+            endRowIndex: rows.length,
+            startColumnIndex: 0,
+            endColumnIndex: Math.max(2, maxWidth),
+          },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: { red: 1, green: 1, blue: 1 },
+              textFormat: {
+                fontSize: 10,
+                foregroundColor: { red: 0.22, green: 0.25, blue: 0.29 },
+              },
+              horizontalAlignment: "LEFT",
+              verticalAlignment: "MIDDLE",
+            },
+          },
+          fields: "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,verticalAlignment)",
+        },
+      },
+      {
+        autoResizeDimensions: {
+          dimensions: {
+            sheetId,
+            dimension: "COLUMNS",
+            startIndex: 0,
+            endIndex: Math.max(2, maxWidth),
+          },
+        },
+      }
+    );
+  }
+
+  if (formatRequests.length) {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: { requests: formatRequests },
+    });
+  }
+}
+
 export async function appendValues({ telegramUserId, spreadsheetId, sheetName, values }) {
   const sheets = await getAuthorizedSheetsClient(telegramUserId);
   await sheets.spreadsheets.values.append({
@@ -205,4 +541,3 @@ Caption: ${caption || ""}
   const text = result.response.text().replace(/```json|```/g, "").trim();
   return JSON.parse(text);
 }
-

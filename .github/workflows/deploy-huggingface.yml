@@ -33,6 +33,7 @@ jobs:
 
           PUBLIC_BASE_URL: ${{ secrets.PUBLIC_BASE_URL }}
           LOVANN_PORT: "7860"
+          LOVANN_INTERNAL_BASE_URL: "http://127.0.0.1:7860"
           N8N_INTERNAL_PORT: "5678"
 
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
