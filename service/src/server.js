@@ -91,7 +91,7 @@ async function main() {
 
   const proxy = createProxyMiddleware({
     target: config.n8nTarget,
-    changeOrigin: true,
+    changeOrigin: false,
     xfwd: true,
     ws: true,
     on: {
