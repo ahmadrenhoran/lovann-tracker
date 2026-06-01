@@ -47,7 +47,7 @@ DB_POSTGRESDB_DATABASE=postgres
 DB_POSTGRESDB_USER=postgres.PROJECT_REF
 DB_POSTGRESDB_PASSWORD=PASSWORD
 DB_POSTGRESDB_SSL_ENABLED=true
-DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED=true
+DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED=false
 ```
 
 ## 4. GitHub Secrets
@@ -75,6 +75,7 @@ Required app secrets:
 ```text
 PUBLIC_BASE_URL=https://<hf-username>-<space-name>.hf.space
 WEBHOOK_URL=https://<hf-username>-<space-name>.hf.space/
+N8N_EDITOR_BASE_URL=https://<hf-username>-<space-name>.hf.space/
 TELEGRAM_BOT_TOKEN=<telegram bot token>
 
 GOOGLE_CLIENT_ID=<google oauth client id>
@@ -93,6 +94,12 @@ N8N_BASIC_AUTH_PASSWORD=<strong password>
 N8N_HOST=<hf-username>-<space-name>.hf.space
 N8N_PROTOCOL=https
 N8N_PORT=5678
+N8N_SECURE_COOKIE=true
+N8N_PROXY_HOPS=1
+N8N_INSTANCE_OWNER_EMAIL=<your email>
+N8N_INSTANCE_OWNER_FIRST_NAME=<your first name>
+N8N_INSTANCE_OWNER_LAST_NAME=<your last name>
+N8N_OWNER_PASSWORD=<owner password>
 
 DB_TYPE=postgresdb
 DB_POSTGRESDB_HOST=aws-REGION.pooler.supabase.com
@@ -101,7 +108,7 @@ DB_POSTGRESDB_DATABASE=postgres
 DB_POSTGRESDB_USER=postgres.PROJECT_REF
 DB_POSTGRESDB_PASSWORD=PASSWORD
 DB_POSTGRESDB_SSL_ENABLED=true
-DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED=true
+DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED=false
 
 GENERIC_TIMEZONE=Asia/Jakarta
 TZ=Asia/Jakarta
@@ -119,9 +126,12 @@ Recommended public Space env values:
 ```text
 PUBLIC_BASE_URL=https://acaca28-lovann-tracker.hf.space
 WEBHOOK_URL=https://acaca28-lovann-tracker.hf.space/
+N8N_EDITOR_BASE_URL=https://acaca28-lovann-tracker.hf.space/
 N8N_HOST=acaca28-lovann-tracker.hf.space
-N8N_PROTOCOL=http
+N8N_PROTOCOL=https
 N8N_PORT=5678
+N8N_SECURE_COOKIE=true
+N8N_PROXY_HOPS=1
 ```
 
 Recommended local n8n auth values:
@@ -131,6 +141,10 @@ N8N_BASIC_AUTH_ACTIVE=true
 N8N_BASIC_AUTH_USER=admin
 N8N_BASIC_AUTH_PASSWORD=<strong password>
 N8N_ENCRYPTION_KEY=<long stable random string>
+N8N_INSTANCE_OWNER_EMAIL=<your email>
+N8N_INSTANCE_OWNER_FIRST_NAME=<your first name>
+N8N_INSTANCE_OWNER_LAST_NAME=<your last name>
+N8N_OWNER_PASSWORD=<owner password>
 ```
 
 Do not generate and commit `.env` into Hugging Face. If the Space is public, that exposes secrets. Even on a private Space, secrets in git history are harder to rotate safely.

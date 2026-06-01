@@ -53,6 +53,13 @@ jobs:
           N8N_PROTOCOL: "https"
           N8N_PORT: "5678"
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          N8N_EDITOR_BASE_URL: ${{ secrets.N8N_EDITOR_BASE_URL }}
+          N8N_SECURE_COOKIE: "true"
+          N8N_PROXY_HOPS: "1"
+          N8N_INSTANCE_OWNER_EMAIL: ${{ secrets.N8N_INSTANCE_OWNER_EMAIL }}
+          N8N_INSTANCE_OWNER_FIRST_NAME: ${{ secrets.N8N_INSTANCE_OWNER_FIRST_NAME }}
+          N8N_INSTANCE_OWNER_LAST_NAME: ${{ secrets.N8N_INSTANCE_OWNER_LAST_NAME }}
+          N8N_OWNER_PASSWORD: ${{ secrets.N8N_OWNER_PASSWORD }}
           GENERIC_TIMEZONE: "Asia/Jakarta"
           TZ: "Asia/Jakarta"
 
