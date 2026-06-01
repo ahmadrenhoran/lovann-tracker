@@ -14,6 +14,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Validate required GitHub Secrets
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+          HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
+        run: |
+          if [ -z "$HF_TOKEN" ] || [ -z "$HF_USERNAME" ] || [ -z "$HF_SPACE_NAME" ]; then
+            echo "Missing one of: HF_TOKEN, HF_USERNAME, HF_SPACE_NAME"
+            exit 1
+          fi
+
       - name: Sync Hugging Face Space secrets
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}

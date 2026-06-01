@@ -66,6 +66,8 @@ HF_USERNAME
 HF_SPACE_NAME
 ```
 
+Without these three, the GitHub Action cannot sync Hugging Face Space secrets or push the Space.
+
 Required app secrets:
 
 ```text
