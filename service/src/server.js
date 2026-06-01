@@ -8,9 +8,6 @@ import { sendTelegramMessage } from "./telegram.js";
 
 const app = express();
 
-app.use(express.json({ limit: "15mb" }));
-app.use(express.urlencoded({ extended: true }));
-
 app.get("/health", async (_req, res) => {
   res.json({ ok: true, service: "lovann-helper" });
 });
@@ -42,6 +39,9 @@ app.get("/oauth/callback", async (req, res, next) => {
     next(error);
   }
 });
+
+app.use("/api", express.json({ limit: "15mb" }));
+app.use("/api", express.urlencoded({ extended: true }));
 
 app.post("/api/telegram/handle", async (req, res, next) => {
   try {
@@ -94,7 +94,9 @@ async function main() {
     changeOrigin: true,
     xfwd: true,
     ws: true,
-    onProxyReq: fixRequestBody,
+    on: {
+      proxyReq: fixRequestBody,
+    },
   });
 
   app.use("/", proxy);
