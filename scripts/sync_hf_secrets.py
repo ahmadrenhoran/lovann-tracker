@@ -31,6 +31,8 @@ SECRET_NAMES = [
     "DB_POSTGRESDB_DATABASE",
     "DB_POSTGRESDB_USER",
     "DB_POSTGRESDB_PASSWORD",
+    "DB_POSTGRESDB_SSL_ENABLED",
+    "DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED",
 ]
 
 
@@ -61,4 +63,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

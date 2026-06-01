@@ -33,19 +33,21 @@ GOOGLE_AI_API_KEY
 GOOGLE_AI_MODEL=gemini-1.5-flash
 ```
 
-## 3. Postgres
+## 3. Supabase Postgres
 
-Provision external Postgres. Set both n8n DB variables and helper DB URL.
+Provision a Supabase PostgreSQL service. Use the Supavisor session pooler for Hugging Face Space, because the Space is typically IPv4-only and Supabase direct connections are IPv6 by default.
 
 ```text
-LOVANN_DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DATABASE
+LOVANN_DATABASE_URL=postgresql://postgres.PROJECT_REF:PASSWORD@aws-REGION.pooler.supabase.com:5432/postgres?sslmode=require&uselibpqcompat=true
 
 DB_TYPE=postgresdb
-DB_POSTGRESDB_HOST=HOST
+DB_POSTGRESDB_HOST=aws-REGION.pooler.supabase.com
 DB_POSTGRESDB_PORT=5432
-DB_POSTGRESDB_DATABASE=DATABASE
-DB_POSTGRESDB_USER=USER
+DB_POSTGRESDB_DATABASE=postgres
+DB_POSTGRESDB_USER=postgres.PROJECT_REF
 DB_POSTGRESDB_PASSWORD=PASSWORD
+DB_POSTGRESDB_SSL_ENABLED=true
+DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED=true
 ```
 
 ## 4. GitHub Secrets
@@ -82,7 +84,7 @@ GOOGLE_AI_API_KEY=<google ai key>
 GOOGLE_AI_MODEL=gemini-1.5-flash
 UPLOAD_DIR=/data/uploads
 
-LOVANN_DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DATABASE
+LOVANN_DATABASE_URL=postgresql://postgres.PROJECT_REF:PASSWORD@aws-REGION.pooler.supabase.com:5432/postgres?sslmode=require&uselibpqcompat=true
 
 N8N_ENCRYPTION_KEY=<long stable random string>
 N8N_BASIC_AUTH_ACTIVE=true
@@ -93,17 +95,43 @@ N8N_PROTOCOL=https
 N8N_PORT=5678
 
 DB_TYPE=postgresdb
-DB_POSTGRESDB_HOST=HOST
+DB_POSTGRESDB_HOST=aws-REGION.pooler.supabase.com
 DB_POSTGRESDB_PORT=5432
-DB_POSTGRESDB_DATABASE=DATABASE
-DB_POSTGRESDB_USER=USER
+DB_POSTGRESDB_DATABASE=postgres
+DB_POSTGRESDB_USER=postgres.PROJECT_REF
 DB_POSTGRESDB_PASSWORD=PASSWORD
+DB_POSTGRESDB_SSL_ENABLED=true
+DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED=true
 
 GENERIC_TIMEZONE=Asia/Jakarta
 TZ=Asia/Jakarta
 ```
 
 The GitHub Action syncs these GitHub Secrets into Hugging Face Space Secrets before pushing the code.
+
+For Supabase, get the values from `Project Settings -> Database -> Connection string -> Session pooler`.
+Use the session pooler host and username exactly as Supabase gives them. Do not use the direct `db.<project-ref>.supabase.co:5432` endpoint on Hugging Face if your Space cannot reach IPv6.
+
+If you already have a direct `db.<project-ref>.supabase.co` URL, replace it with the session pooler host shown by Supabase. The helper app and n8n must both point to the same pooler endpoint.
+
+Recommended public Space env values:
+
+```text
+PUBLIC_BASE_URL=https://acaca28-lovann-tracker.hf.space
+WEBHOOK_URL=https://acaca28-lovann-tracker.hf.space/
+N8N_HOST=acaca28-lovann-tracker.hf.space
+N8N_PROTOCOL=http
+N8N_PORT=5678
+```
+
+Recommended local n8n auth values:
+
+```text
+N8N_BASIC_AUTH_ACTIVE=true
+N8N_BASIC_AUTH_USER=admin
+N8N_BASIC_AUTH_PASSWORD=<strong password>
+N8N_ENCRYPTION_KEY=<long stable random string>
+```
 
 Do not generate and commit `.env` into Hugging Face. If the Space is public, that exposes secrets. Even on a private Space, secrets in git history are harder to rotate safely.
 

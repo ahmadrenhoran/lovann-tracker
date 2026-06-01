@@ -62,6 +62,8 @@ jobs:
           DB_POSTGRESDB_DATABASE: ${{ secrets.DB_POSTGRESDB_DATABASE }}
           DB_POSTGRESDB_USER: ${{ secrets.DB_POSTGRESDB_USER }}
           DB_POSTGRESDB_PASSWORD: ${{ secrets.DB_POSTGRESDB_PASSWORD }}
+          DB_POSTGRESDB_SSL_ENABLED: ${{ secrets.DB_POSTGRESDB_SSL_ENABLED }}
+          DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED: ${{ secrets.DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED }}
         run: |
           python -m pip install --upgrade huggingface_hub
           python scripts/sync_hf_secrets.py
