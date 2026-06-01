@@ -78,6 +78,7 @@ GOOGLE_CLIENT_SECRET=<google oauth client secret>
 GOOGLE_REDIRECT_URI=https://<hf-username>-<space-name>.hf.space/oauth/callback
 GOOGLE_AI_API_KEY=<google ai key>
 GOOGLE_AI_MODEL=gemini-1.5-flash
+UPLOAD_DIR=/data/uploads
 
 LOVANN_DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DATABASE
 
@@ -103,6 +104,8 @@ TZ=Asia/Jakarta
 The GitHub Action syncs these GitHub Secrets into Hugging Face Space Secrets before pushing the code.
 
 Do not generate and commit `.env` into Hugging Face. If the Space is public, that exposes secrets. Even on a private Space, secrets in git history are harder to rotate safely.
+
+The storage bucket should be mounted at `/data`, so uploaded food images land in `/data/uploads` and survive restarts.
 
 ## 5. n8n Workflow
 

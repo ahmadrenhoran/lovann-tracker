@@ -239,7 +239,7 @@ export async function handleTelegramUpdate(update) {
           food.cholesterol_mg || "",
           food.notes || "",
           photo.file_id,
-          image.filePath,
+          image.localPath,
           food.confidence || "",
           text,
           "telegram_image",
@@ -269,4 +269,3 @@ export async function handleTelegramUpdate(update) {
     return { ok: false, chatId, reply: `Gagal memproses input: ${error.message}` };
   }
 }
-

@@ -1,4 +1,6 @@
 import { config } from "./config.js";
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
 
 export function getMessage(update) {
   return update?.message || update?.edited_message || null;
@@ -61,10 +63,16 @@ export async function downloadTelegramPhoto(fileId) {
   }
   const arrayBuffer = await imageResponse.arrayBuffer();
   const mimeType = imageResponse.headers.get("content-type") || "image/jpeg";
+  const buffer = Buffer.from(arrayBuffer);
+  const ext = path.extname(filePath) || (mimeType.includes("png") ? ".png" : ".jpg");
+  const safeName = `${String(fileId).replace(/[^a-zA-Z0-9_-]/g, "_")}${ext}`;
+  const localPath = path.join(config.uploadDir, safeName);
+  await mkdir(config.uploadDir, { recursive: true });
+  await writeFile(localPath, buffer);
   return {
-    base64: Buffer.from(arrayBuffer).toString("base64"),
+    base64: buffer.toString("base64"),
     mimeType,
     filePath,
+    localPath,
   };
 }
-

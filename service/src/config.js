@@ -15,6 +15,7 @@ export const config = {
   port: Number(process.env.LOVANN_PORT || process.env.PORT || 7860),
   n8nTarget: `http://127.0.0.1:${process.env.N8N_INTERNAL_PORT || process.env.N8N_PORT || 5678}`,
   publicBaseUrl: (process.env.PUBLIC_BASE_URL || "http://localhost:7860").replace(/\/$/, ""),
+  uploadDir: process.env.UPLOAD_DIR || "/data/uploads",
   telegramBotToken: process.env.TELEGRAM_BOT_TOKEN || "",
   googleClientId: process.env.GOOGLE_CLIENT_ID || "",
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
