@@ -1,5 +1,5 @@
 import express from "express";
-import { createProxyMiddleware } from "http-proxy-middleware";
+import { createProxyMiddleware, fixRequestBody } from "http-proxy-middleware";
 import { config } from "./config.js";
 import { ensureSchema } from "./db.js";
 import { exchangeOAuthCode, buildOAuthUrl } from "./google.js";
@@ -94,6 +94,7 @@ async function main() {
     changeOrigin: true,
     xfwd: true,
     ws: true,
+    onProxyReq: fixRequestBody,
   });
 
   app.use("/", proxy);
