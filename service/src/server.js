@@ -73,16 +73,6 @@ app.use((err, _req, res, _next) => {
   });
 });
 
-app.use(
-  "/",
-  createProxyMiddleware({
-    target: config.n8nTarget,
-    changeOrigin: true,
-    xfwd: true,
-    ws: true,
-  }),
-);
-
 async function main() {
   let lastError;
   for (let attempt = 1; attempt <= 30; attempt += 1) {
@@ -99,10 +89,21 @@ async function main() {
 
   if (lastError) throw lastError;
 
-  app.listen(config.port, "0.0.0.0", () => {
+  const proxy = createProxyMiddleware({
+    target: config.n8nTarget,
+    changeOrigin: true,
+    xfwd: true,
+    ws: true,
+  });
+
+  app.use("/", proxy);
+
+  const server = app.listen(config.port, "0.0.0.0", () => {
     console.log(`Lovann helper/proxy listening on ${config.port}`);
     console.log(`Proxying n8n to ${config.n8nTarget}`);
   });
+
+  server.on("upgrade", proxy.upgrade);
 }
 
 main().catch((error) => {
