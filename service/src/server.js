@@ -78,6 +78,7 @@ app.use(
   createProxyMiddleware({
     target: config.n8nTarget,
     changeOrigin: true,
+    xfwd: true,
     ws: true,
   }),
 );
